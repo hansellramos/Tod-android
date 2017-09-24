@@ -7,4 +7,5 @@
     <string name="email">Email</string>
     <string name="version">Version 0.0.1</string>
     <string name="sign_out">Sign Out</string>
+    <string name="show_completed">Show Completed</string>
 </resources>
