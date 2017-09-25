@@ -1,36 +1,83 @@
 package com.hansellramos.tod.android;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.view.View;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "MainActivity";
-    private final int RC_SIGN_IN = 2905;
+    private final int RC_SIGN_IN = 2900;
 
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mFirebaseAuthStateListener;
+
+    private TextView textViewUserName;
+    private TextView textViewUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initWidgets();
+
         init();
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         if (mFirebaseAuth != null && mFirebaseAuthStateListener != null) {
             mFirebaseAuth.addAuthStateListener(mFirebaseAuthStateListener);
         }
@@ -44,6 +91,35 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+//        if (id == R.id.nav_my_checklists) {
+//
+//        } else if (id == R.id.nav_become_pro) {
+//
+//        } else if (id == R.id.nav_rewards) {
+//
+//        } else if (id == R.id.nav_notifications) {
+//
+//        } else if (id == R.id.nav_settings) {
+//
+//        } else if (id == R.id.nav_tell_a_friend) {
+//
+//        }else if (id == R.id.nav_help) {
+//            startActivity(new Intent(MainActivity.this, HelpActivity.class));
+//        } else if (id == R.id.nav_sign_out) {
+//            mFirebaseAuth.signOut();
+//        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
     private void init() {
         mFirebaseAuth = FirebaseAuth.getInstance();
 
@@ -53,7 +129,8 @@ public class MainActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     Log.i(TAG, "Signed In: " + user.getDisplayName() + " - " + user.getEmail());
-                    Toast.makeText(MainActivity.this, "Signed In: " + user.getDisplayName() + " - " + user.getEmail(), Toast.LENGTH_LONG).show();
+                    textViewUserName.setText(user.getDisplayName());
+                    textViewUserEmail.setText(user.getEmail());
                 } else {
                     startActivity(new Intent(MainActivity.this, SignInActivity.class));
                     finish();
@@ -62,19 +139,32 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
-    }
+    private void initWidgets() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menuItemSignOut:
-                mFirebaseAuth.signOut();
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+        View headerView = navigationView.getHeaderView(0);
+        textViewUserName = (TextView) headerView.findViewById(R.id.textViewUserName);
+        textViewUserEmail = (TextView) headerView.findViewById(R.id.textViewUserEmail);
+
+        navigationView.setNavigationItemSelectedListener(this);
     }
 }
