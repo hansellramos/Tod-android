@@ -1,8 +1,11 @@
 package com.hansellramos.tod.android;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,9 +15,23 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static final String TAG = "MainActivity";
+    private final int RC_SIGN_IN = 2905;
+
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseAuth.AuthStateListener mFirebaseAuthStateListener;
+
+    private TextView textViewUserName;
+    private TextView textViewUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +56,30 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+        View headerView = navigationView.getHeaderView(0);
+        textViewUserName = (TextView) headerView.findViewById(R.id.textViewUserName);
+        textViewUserEmail = (TextView) headerView.findViewById(R.id.textViewUserEmail);
+
         navigationView.setNavigationItemSelectedListener(this);
+
+        init();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mFirebaseAuth != null && mFirebaseAuthStateListener != null) {
+            mFirebaseAuth.addAuthStateListener(mFirebaseAuthStateListener);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mFirebaseAuth != null && mFirebaseAuthStateListener != null) {
+            mFirebaseAuth.removeAuthStateListener(mFirebaseAuthStateListener);
+        }
     }
 
     @Override
@@ -92,10 +132,31 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_send) {
 
+        } else if (id == R.id.nav_sign_out) {
+            mFirebaseAuth.signOut();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void init() {
+        mFirebaseAuth = FirebaseAuth.getInstance();
+
+        mFirebaseAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    Log.i(TAG, "Signed In: " + user.getDisplayName() + " - " + user.getEmail());
+                    textViewUserName.setText(user.getDisplayName());
+                    textViewUserEmail.setText(user.getEmail());
+                } else {
+                    startActivity(new Intent(MainActivity.this, SignInActivity.class));
+                    finish();
+                }
+            }
+        };
     }
 }

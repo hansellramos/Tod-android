@@ -14,4 +14,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="default_user_name">Tod User</string>
+    <string name="default_user_email">tod.user@email.com</string>
+    <string name="nav_sign_out">Sign Out</string>
 </resources>
